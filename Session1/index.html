@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neural Network Fundamentals · ERA v5 S1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-logo">ERA v5 · S1</div>
+    <div class="nav-links">
+      <a href="#s1" class="nav-link">Activations</a>
+      <a href="#s2" class="nav-link">Depth</a>
+      <a href="#s3" class="nav-link">Embeddings</a>
+      <a href="#s4" class="nav-link">Generalization</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-badge">ERA v5 · Session 1</div>
+      <h1 class="hero-title">Why Neural Networks Work</h1>
+      <p class="hero-subtitle">Four live experiments proving the foundations of deep learning — activations, depth, embeddings, and generalization — running entirely in your browser.</p>
+      <div class="hero-cards">
+        <a href="#s1" class="hero-card" style="--c:#8b5cf6">
+          <span class="hero-card-num">01</span>
+          <span class="hero-card-title">Activations</span>
+          <span class="hero-card-desc">Why ReLU unlocks nonlinear boundaries</span>
+        </a>
+        <a href="#s2" class="hero-card" style="--c:#06b6d4">
+          <span class="hero-card-num">02</span>
+          <span class="hero-card-title">Depth</span>
+          <span class="hero-card-desc">Linear depth is an illusion</span>
+        </a>
+        <a href="#s3" class="hero-card" style="--c:#10b981">
+          <span class="hero-card-num">03</span>
+          <span class="hero-card-title">Embeddings</span>
+          <span class="hero-card-desc">Meaning emerges from prediction</span>
+        </a>
+        <a href="#s4" class="hero-card" style="--c:#f59e0b">
+          <span class="hero-card-num">04</span>
+          <span class="hero-card-title">Generalization</span>
+          <span class="hero-card-desc">Data closes the memorization gap</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- S1-1: ACTIVATIONS -->
+  <section id="s1" class="experiment-section" data-color="#8b5cf6">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-badge" style="--c:#8b5cf6">Experiment 01</div>
+        <h2 class="section-title">Activations Exist for a Reason</h2>
+        <p class="section-claim">
+          A model with no nonlinearity can only draw a <strong>straight line</strong>. It cannot separate two concentric rings.
+          Adding one ReLU hidden layer lets the boundary wrap around the inner ring — accuracy jumps from ~55% to ~99%.
+        </p>
+      </div>
+
+      <div class="experiment-controls">
+        <button class="btn-run" id="s1-run" style="--c:#8b5cf6">
+          <span class="btn-icon">▶</span> Run Experiment
+        </button>
+        <div class="stat-row" id="s1-stats" style="display:none">
+          <div class="stat-badge" style="--c:#ef4444">
+            <span class="stat-label">Linear Accuracy</span>
+            <span class="stat-val" id="s1-acc-linear">—</span>
+          </div>
+          <div class="stat-badge" style="--c:#8b5cf6">
+            <span class="stat-label">ReLU Accuracy</span>
+            <span class="stat-val" id="s1-acc-relu">—</span>
+          </div>
+          <div class="stat-badge" style="--c:#64748b">
+            <span class="stat-label">Epoch</span>
+            <span class="stat-val" id="s1-epoch">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-grid-2">
+        <div class="canvas-card" style="--c:#ef4444">
+          <div class="canvas-card-header">
+            <span class="canvas-card-title">Linear Model</span>
+            <span class="canvas-card-tag">1 layer · no activation</span>
+          </div>
+          <canvas id="s1-canvas-linear" width="340" height="340"></canvas>
+          <div class="canvas-footer">
+            <div class="progress-bar"><div class="progress-fill" id="s1-prog-linear" style="--c:#ef4444;width:0%"></div></div>
+          </div>
+        </div>
+        <div class="canvas-card" style="--c:#8b5cf6">
+          <div class="canvas-card-header">
+            <span class="canvas-card-title">ReLU Model</span>
+            <span class="canvas-card-tag">2→16→1 · ReLU hidden</span>
+          </div>
+          <canvas id="s1-canvas-relu" width="340" height="340"></canvas>
+          <div class="canvas-footer">
+            <div class="progress-bar"><div class="progress-fill" id="s1-prog-relu" style="--c:#8b5cf6;width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loss-chart-wrap">
+        <canvas id="s1-loss-chart" width="700" height="180"></canvas>
+      </div>
+
+      <div class="insight-box" style="--c:#8b5cf6">
+        <div class="insight-icon">💡</div>
+        <div class="insight-text">
+          <strong>Key insight:</strong> The linear model's boundary is literally a straight line — the weights can only define a hyperplane in 2D.
+          The ReLU model pieces together multiple linear regions, carving out the inner ring.
+          <strong>Only the activation changed. Everything else is identical.</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S1-2: DEPTH -->
+  <section id="s2" class="experiment-section" data-color="#06b6d4">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-badge" style="--c:#06b6d4">Experiment 02</div>
+        <h2 class="section-title">Depth Without Nonlinearity Is a Lie</h2>
+        <p class="section-claim">
+          Five stacked linear layers mathematically collapse into <strong>one linear map</strong>. A 5-layer linear network
+          is no stronger than a 1-layer network — both draw the same straight-line boundary. Insert ReLUs and the five layers suddenly solve it.
+        </p>
+      </div>
+
+      <div class="experiment-controls">
+        <button class="btn-run" id="s2-run" style="--c:#06b6d4">
+          <span class="btn-icon">▶</span> Run Experiment
+        </button>
+        <div class="stat-row" id="s2-stats" style="display:none">
+          <div class="stat-badge" style="--c:#ef4444">
+            <span class="stat-label">1-Layer Linear</span>
+            <span class="stat-val" id="s2-acc-1">—</span>
+          </div>
+          <div class="stat-badge" style="--c:#f59e0b">
+            <span class="stat-label">5-Layer Linear</span>
+            <span class="stat-val" id="s2-acc-5">—</span>
+          </div>
+          <div class="stat-badge" style="--c:#06b6d4">
+            <span class="stat-label">5-Layer ReLU</span>
+            <span class="stat-val" id="s2-acc-5r">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="canvas-grid-3">
+        <div class="canvas-card" style="--c:#ef4444">
+          <div class="canvas-card-header">
+            <span class="canvas-card-title">1-Layer Linear</span>
+            <span class="canvas-card-tag">2→1 · sigmoid</span>
+          </div>
+          <canvas id="s2-canvas-1" width="220" height="220"></canvas>
+        </div>
+        <div class="canvas-card" style="--c:#f59e0b">
+          <div class="canvas-card-header">
+            <span class="canvas-card-title">5-Layer Linear</span>
+            <span class="canvas-card-tag">no activations</span>
+          </div>
+          <canvas id="s2-canvas-5" width="220" height="220"></canvas>
+        </div>
+        <div class="canvas-card" style="--c:#06b6d4">
+          <div class="canvas-card-header">
+            <span class="canvas-card-title">5-Layer ReLU</span>
+            <span class="canvas-card-tag">ReLU between layers</span>
+          </div>
+          <canvas id="s2-canvas-5r" width="220" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="matrix-collapse-box" id="s2-matrix-box" style="display:none">
+        <div class="matrix-collapse-title">
+          <span style="color:#f59e0b">W₁ × W₂ × W₃ × W₄ × W₅</span>
+          <span style="color:#64748b"> = </span>
+          <span style="color:#06b6d4">One Single Matrix</span>
+        </div>
+        <div class="matrix-equation" id="s2-matrix-eq">
+          <!-- filled by JS -->
+        </div>
+        <p class="matrix-note">The product of all five weight matrices is just one 2×1 matrix — equivalent rank to a single linear layer.</p>
+      </div>
+
+      <div class="insight-box" style="--c:#06b6d4">
+        <div class="insight-icon">💡</div>
+        <div class="insight-text">
+          <strong>Key insight:</strong> W₁W₂W₃W₄W₅ = W_eff — a single linear transformation.
+          No matter how deep you stack linear layers, composition of linear functions is still linear.
+          <strong>Nonlinearity is what makes depth meaningful.</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S1-3: EMBEDDINGS -->
+  <section id="s3" class="experiment-section" data-color="#10b981">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-badge" style="--c:#10b981">Experiment 03</div>
+        <h2 class="section-title">Embeddings Learn Similarity from Nothing but Next-Token</h2>
+        <p class="section-claim">
+          A model trained <em>only</em> to predict the next word in a tiny synthetic language spontaneously clusters
+          <strong>animals with animals, fruits with fruits, verbs with verbs</strong> — no similarity labels were ever given.
+        </p>
+      </div>
+
+      <div class="vocab-display">
+        <div class="vocab-group" style="--c:#60a5fa">
+          <span class="vocab-label">Animals</span>
+          <div class="vocab-tokens">
+            <span class="token">cat</span><span class="token">dog</span><span class="token">cow</span>
+          </div>
+        </div>
+        <div class="vocab-group" style="--c:#34d399">
+          <span class="vocab-label">Fruits</span>
+          <div class="vocab-tokens">
+            <span class="token">apple</span><span class="token">mango</span>
+          </div>
+        </div>
+        <div class="vocab-group" style="--c:#f87171">
+          <span class="vocab-label">Verbs</span>
+          <div class="vocab-tokens">
+            <span class="token">eat</span><span class="token">chase</span><span class="token">see</span>
+          </div>
+        </div>
+        <div class="vocab-group" style="--c:#a78bfa">
+          <span class="vocab-label">Template</span>
+          <div class="vocab-tokens">
+            <span class="token token-template">[animal] [verb] [animal/fruit]</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="experiment-controls">
+        <button class="btn-run" id="s3-run" style="--c:#10b981">
+          <span class="btn-icon">▶</span> Train & Visualize
+        </button>
+        <div class="stat-row" id="s3-stats" style="display:none">
+          <div class="stat-badge" style="--c:#10b981">
+            <span class="stat-label">Loss</span>
+            <span class="stat-val" id="s3-loss">—</span>
+          </div>
+          <div class="stat-badge" style="--c:#64748b">
+            <span class="stat-label">Epoch</span>
+            <span class="stat-val" id="s3-epoch">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="embedding-layout">
+        <div class="canvas-card wide" style="--c:#10b981">
+          <div class="canvas-card-header">
+            <span class="canvas-card-title">Embedding Space (PCA → 2D)</span>
+            <span class="canvas-card-tag">learned from next-token only</span>
+          </div>
+          <canvas id="s3-canvas" width="500" height="400"></canvas>
+        </div>
+        <div class="embedding-sidebar">
+          <div class="canvas-card" style="--c:#10b981">
+            <div class="canvas-card-header">
+              <span class="canvas-card-title">Nearest Neighbors</span>
+            </div>
+            <div id="s3-neighbors" class="neighbors-list">
+              <p class="neighbors-placeholder">Train to see clusters emerge</p>
+            </div>
+          </div>
+          <div class="canvas-card" style="--c:#10b981">
+            <div class="canvas-card-header">
+              <span class="canvas-card-title">Training Loss</span>
+            </div>
+            <canvas id="s3-loss-chart" width="260" height="140"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-box" style="--c:#10b981">
+        <div class="insight-icon">💡</div>
+        <div class="insight-text">
+          <strong>Key insight:</strong> Tokens that appear in similar contexts have similar next-token distributions.
+          Minimizing cross-entropy forces the embedding table to encode this structure.
+          <strong>Semantic similarity is a side-effect of next-token prediction — it's never explicitly taught.</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S1-4: GENERALIZATION -->
+  <section id="s4" class="experiment-section" data-color="#f59e0b">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-badge" style="--c:#f59e0b">Experiment 04</div>
+        <h2 class="section-title">Memorization vs Generalization</h2>
+        <p class="section-claim">
+          An over-parameterized model on tiny data drives training loss to <strong>zero</strong> while test loss stays high —
+          it memorizes, not learns. Growing the dataset closes the gap. <strong>Data is everything.</strong>
+        </p>
+      </div>
+
+      <div class="experiment-controls">
+        <button class="btn-run" id="s4-run" style="--c:#f59e0b">
+          <span class="btn-icon">▶</span> Run All Three
+        </button>
+        <div class="stat-row" id="s4-stats" style="display:none">
+          <div class="stat-badge" style="--c:#ef4444">
+            <span class="stat-label">Gap @ n=20</span>
+            <span class="stat-val" id="s4-gap-20">—</span>
+          </div>
+          <div class="stat-badge" style="--c:#f59e0b">
+            <span class="stat-label">Gap @ n=200</span>
+            <span class="stat-val" id="s4-gap-200">—</span>
+          </div>
+          <div class="stat-badge" style="--c:#10b981">
+            <span class="stat-label">Gap @ n=2000</span>
+            <span class="stat-val" id="s4-gap-2000">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="generalization-layout">
+        <div class="canvas-grid-3 small-canvases">
+          <div class="canvas-card" style="--c:#ef4444">
+            <div class="canvas-card-header">
+              <span class="canvas-card-title">n = 20</span>
+              <span class="canvas-card-tag">Memorization</span>
+            </div>
+            <canvas id="s4-boundary-20" width="200" height="200"></canvas>
+          </div>
+          <div class="canvas-card" style="--c:#f59e0b">
+            <div class="canvas-card-header">
+              <span class="canvas-card-title">n = 200</span>
+              <span class="canvas-card-tag">Transition</span>
+            </div>
+            <canvas id="s4-boundary-200" width="200" height="200"></canvas>
+          </div>
+          <div class="canvas-card" style="--c:#10b981">
+            <div class="canvas-card-header">
+              <span class="canvas-card-title">n = 2000</span>
+              <span class="canvas-card-tag">Generalization</span>
+            </div>
+            <canvas id="s4-boundary-2000" width="200" height="200"></canvas>
+          </div>
+        </div>
+
+        <div class="canvas-card full-width-card" style="--c:#f59e0b">
+          <div class="canvas-card-header">
+            <span class="canvas-card-title">Train vs Test Loss · All Three Runs</span>
+            <span class="canvas-card-tag">generalization gap closes with data</span>
+          </div>
+          <canvas id="s4-gap-chart" width="680" height="240"></canvas>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Train</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#fb923c;opacity:0.5"></span> Test</span>
+            <span class="legend-note">Solid = n=2000 · Dashed = n=200 · Dotted = n=20</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-box" style="--c:#f59e0b">
+        <div class="insight-icon">💡</div>
+        <div class="insight-text">
+          <strong>Key insight:</strong> With n=20, the model has enough parameters to memorize every training point,
+          so train loss → 0 but test loss stays high. With n=2000, the sheer variety of examples forces
+          the model to learn the underlying structure. <strong>You cannot regularize your way out of too little data.</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-text">ERA v5 · Session 1 · Neural Network Fundamentals</div>
+      <div class="footer-sub">All experiments run live in your browser · No server, no GPU, no magic</div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
