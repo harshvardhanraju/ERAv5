@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multilingual BPE Tokenizer · ERA v5 S2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a12;
+      --surface: #13131f;
+      --surface2: #1a1a2e;
+      --border: #252540;
+      --text: #e2e2f0;
+      --muted: #7070a0;
+      --accent: #7c3aed;
+      --accent2: #06b6d4;
+      --accent3: #10b981;
+      --accent4: #f59e0b;
+      --red: #ef4444;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; }
+
+    /* ── Nav ── */
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,18,.92); backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--border); display: flex; align-items: center;
+          justify-content: space-between; padding: 0 2rem; height: 56px; }
+    .nav-logo { font-weight: 700; font-size: .9rem; color: var(--accent); letter-spacing: .04em; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a { color: var(--muted); font-size: .85rem; text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero { padding: 4rem 2rem 2rem; max-width: 900px; margin: 0 auto; text-align: center; }
+    .badge { display: inline-block; background: rgba(124,58,237,.15); border: 1px solid rgba(124,58,237,.4);
+             color: var(--accent); padding: .3rem .9rem; border-radius: 9999px; font-size: .78rem;
+             font-weight: 600; letter-spacing: .06em; margin-bottom: 1.2rem; }
+    h1 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; line-height: 1.15;
+         background: linear-gradient(135deg, #e2e2f0 0%, #7c3aed 100%);
+         -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+    .hero-sub { color: var(--muted); font-size: 1.05rem; max-width: 660px; margin: 0 auto 2rem; }
+    .hero-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+                  gap: 1rem; max-width: 760px; margin: 0 auto; }
+    .hero-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+                 padding: 1.2rem; text-decoration: none; transition: transform .2s, border-color .2s; }
+    .hero-card:hover { transform: translateY(-3px); border-color: var(--c, var(--accent)); }
+    .hc-num { display: block; font-size: .7rem; color: var(--c, var(--accent)); font-weight: 700;
+              letter-spacing: .1em; margin-bottom: .4rem; }
+    .hc-name { display: block; font-size: .95rem; font-weight: 700; color: var(--text); }
+    .hc-script { display: block; font-size: .75rem; color: var(--muted); margin-top: .2rem; }
+
+    /* ── Section ── */
+    section { max-width: 900px; margin: 0 auto; padding: 2rem 2rem 3rem; }
+    .section-title { font-size: 1.5rem; font-weight: 700; margin-bottom: .5rem; }
+    .section-sub { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+
+    /* ── Score Banner ── */
+    .score-banner { background: linear-gradient(135deg, rgba(124,58,237,.15), rgba(6,182,212,.1));
+                    border: 1px solid rgba(124,58,237,.4); border-radius: 16px;
+                    padding: 2rem; margin-bottom: 2.5rem; text-align: center; }
+    .score-val { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 800; font-family: var(--mono);
+                 background: linear-gradient(135deg, var(--accent), var(--accent2));
+                 -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .score-label { color: var(--muted); font-size: .9rem; margin-top: .4rem; }
+    .score-formula { background: var(--surface2); border-radius: 8px; padding: .7rem 1.2rem;
+                     font-family: var(--mono); font-size: .85rem; color: var(--text);
+                     margin: 1rem auto 0; display: inline-block; }
+
+    /* ── Ratio grid ── */
+    .ratio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .ratio-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+    .rc-lang { font-size: .75rem; font-weight: 700; letter-spacing: .08em; color: var(--c); margin-bottom: .3rem; }
+    .rc-fertility { font-size: 1.6rem; font-weight: 800; font-family: var(--mono); color: var(--text); }
+    .rc-bar-wrap { background: var(--surface2); border-radius: 9999px; height: 6px; margin: .7rem 0 .5rem; }
+    .rc-bar { height: 6px; border-radius: 9999px; background: var(--c); transition: width .8s ease; }
+    .rc-details { font-size: .78rem; color: var(--muted); }
+    .rc-rank { font-size: .7rem; font-weight: 700; color: var(--c); text-transform: uppercase; letter-spacing: .08em; margin-top: .4rem; }
+
+    /* ── Stats table ── */
+    .stats-table { width: 100%; border-collapse: collapse; font-size: .88rem; margin-bottom: 2rem; }
+    .stats-table th { color: var(--muted); font-size: .75rem; font-weight: 600; letter-spacing: .06em;
+                      text-transform: uppercase; padding: .6rem 1rem; text-align: left;
+                      border-bottom: 1px solid var(--border); }
+    .stats-table td { padding: .65rem 1rem; border-bottom: 1px solid rgba(37,37,64,.5); }
+    .stats-table tr:last-child td { border-bottom: none; }
+    .tag { display: inline-block; padding: .15rem .5rem; border-radius: 4px; font-size: .72rem;
+           font-weight: 600; font-family: var(--mono); }
+    .tag-min { background: rgba(16,185,129,.15); color: var(--accent3); }
+    .tag-max { background: rgba(239,68,68,.15); color: var(--red); }
+
+    /* ── Tokenizer playground ── */
+    .playground { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+    .playground textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: .8rem 1rem; color: var(--text);
+      font-family: var(--mono); font-size: .88rem; resize: vertical;
+      min-height: 90px; outline: none; transition: border-color .2s;
+    }
+    .playground textarea:focus { border-color: var(--accent); }
+    .playground-controls { display: flex; gap: .8rem; margin: .8rem 0; flex-wrap: wrap; align-items: center; }
+    .lang-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .lang-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+                padding: .3rem .7rem; border-radius: 6px; cursor: pointer; font-size: .8rem;
+                transition: all .2s; font-family: inherit; }
+    .lang-btn:hover, .lang-btn.active { background: rgba(124,58,237,.2); border-color: var(--accent); color: var(--text); }
+    .tokenize-btn { background: var(--accent); border: none; color: #fff; padding: .4rem 1.2rem;
+                    border-radius: 6px; cursor: pointer; font-weight: 600; font-size: .85rem;
+                    transition: opacity .2s; font-family: inherit; }
+    .tokenize-btn:hover { opacity: .85; }
+    .tokenize-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .token-output { font-family: var(--mono); font-size: .82rem; min-height: 60px; word-break: break-all;
+                    line-height: 2.2; margin-top: .8rem; }
+    .token-chip { display: inline-block; padding: .15rem .45rem; border-radius: 4px; margin: .15rem;
+                  font-size: .8rem; font-weight: 500; border: 1px solid transparent; cursor: default; }
+    .token-stats { color: var(--muted); font-size: .8rem; margin-top: .6rem; }
+    .loading-msg { color: var(--muted); font-size: .85rem; font-style: italic; }
+
+    /* ── Algorithm box ── */
+    .algo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .algo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+    .algo-icon { font-size: 1.4rem; margin-bottom: .5rem; }
+    .algo-title { font-size: .9rem; font-weight: 700; margin-bottom: .4rem; }
+    .algo-desc { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Download ── */
+    .download-area { background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+                     padding: 1.5rem; display: flex; align-items: center; justify-content: space-between;
+                     flex-wrap: wrap; gap: 1rem; }
+    .dl-info { font-size: .88rem; color: var(--muted); }
+    .dl-info strong { color: var(--text); }
+    .dl-btns { display: flex; gap: .7rem; flex-wrap: wrap; }
+    .dl-btn { padding: .5rem 1.1rem; border-radius: 8px; font-size: .85rem; font-weight: 600;
+              cursor: pointer; border: none; transition: opacity .2s; font-family: inherit; }
+    .dl-btn:hover { opacity: .85; }
+    .dl-primary { background: var(--accent); color: #fff; }
+    .dl-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center;
+             color: var(--muted); font-size: .82rem; }
+
+    /* ── Misc ── */
+    .spread-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+                  padding: 1rem 1.4rem; font-family: var(--mono); font-size: .88rem;
+                  display: flex; align-items: center; justify-content: center; gap: 1rem;
+                  flex-wrap: wrap; margin-bottom: 1rem; }
+    .spread-lang { display: flex; flex-direction: column; align-items: center; }
+    .spread-lang-name { font-size: .7rem; color: var(--muted); }
+    .spread-lang-val { font-size: 1.1rem; font-weight: 700; }
+    .spread-arrow { color: var(--muted); font-size: 1.2rem; }
+    .spread-result { font-size: .9rem; font-weight: 600; color: var(--accent2); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ERA v5 · S2</div>
+  <div class="nav-links">
+    <a href="#score">Score</a>
+    <a href="#playground">Try It</a>
+    <a href="#algorithm">Design</a>
+    <a href="#download">Download</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="badge">ERA v5 · Session 2</div>
+  <h1>Multilingual BPE Tokenizer</h1>
+  <p class="hero-sub">One shared 10 000-token vocabulary trained on the Wikipedia India article in four languages. Fertility ratios within a spread of <strong id="hero-spread">…</strong>.</p>
+  <div class="hero-cards">
+    <a href="#" class="hero-card" style="--c:#8b5cf6" id="hc-en">
+      <span class="hc-num">01</span>
+      <span class="hc-name">English</span>
+      <span class="hc-script">Latin script · fertility <span id="hc-en-f">…</span></span>
+    </a>
+    <a href="#" class="hero-card" style="--c:#06b6d4" id="hc-hi">
+      <span class="hc-num">02</span>
+      <span class="hc-name">Hindi</span>
+      <span class="hc-script">Devanagari · fertility <span id="hc-hi-f">…</span></span>
+    </a>
+    <a href="#" class="hero-card" style="--c:#10b981" id="hc-te">
+      <span class="hc-num">03</span>
+      <span class="hc-name">Telugu</span>
+      <span class="hc-script">Telugu script · fertility <span id="hc-te-f">…</span></span>
+    </a>
+    <a href="#" class="hero-card" style="--c:#f59e0b" id="hc-bn">
+      <span class="hc-num">04</span>
+      <span class="hc-name">Bengali</span>
+      <span class="hc-script">Bengali script · fertility <span id="hc-bn-f">…</span></span>
+    </a>
+  </div>
+</div>
+
+<!-- Score -->
+<section id="score">
+  <p class="section-title">Compression Score</p>
+  <p class="section-sub">score = 1 000 / (max fertility − min fertility) · higher is better</p>
+
+  <div class="score-banner">
+    <div class="score-val" id="score-val">…</div>
+    <div class="score-label" id="score-label">Hindi-adjusted score</div>
+    <div class="score-formula" id="score-formula">loading…</div>
+  </div>
+
+  <!-- Spread breakdown -->
+  <div class="spread-box" id="spread-box"></div>
+
+  <!-- Ratio cards -->
+  <div class="ratio-grid" id="ratio-grid"></div>
+
+  <!-- Stats table -->
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Language</th>
+        <th>Script</th>
+        <th>Faithful Units</th>
+        <th>BPE Tokens</th>
+        <th>Fertility</th>
+        <th>Rank</th>
+      </tr>
+    </thead>
+    <tbody id="stats-tbody"></tbody>
+  </table>
+</section>
+
+<!-- Playground -->
+<section id="playground">
+  <p class="section-title">Live Tokenizer Playground</p>
+  <p class="section-sub">Type text in any of the four languages and see how it tokenises. Tokens are colour-coded by ID range.</p>
+
+  <div class="playground">
+    <div class="playground-controls">
+      <div class="lang-btns" id="sample-btns">
+        <button class="lang-btn" onclick="loadSample('en')">English sample</button>
+        <button class="lang-btn" onclick="loadSample('hi')">Hindi sample</button>
+        <button class="lang-btn" onclick="loadSample('te')">Telugu sample</button>
+        <button class="lang-btn" onclick="loadSample('bn')">Bengali sample</button>
+      </div>
+      <button class="tokenize-btn" id="tok-btn" onclick="doTokenize()" disabled>Loading…</button>
+    </div>
+    <textarea id="tok-input" rows="3" placeholder="Type or select a sample…"></textarea>
+    <div class="token-output" id="tok-output">
+      <span class="loading-msg" id="tok-loading">Loading tokenizer (≈2 MB)…</span>
+    </div>
+    <div class="token-stats" id="tok-stats"></div>
+  </div>
+</section>
+
+<!-- Algorithm design -->
+<section id="algorithm">
+  <p class="section-title">Tokenizer Design</p>
+  <p class="section-sub">Five design choices that together push the spread below 0.034.</p>
+  <div class="algo-grid">
+    <div class="algo-card">
+      <div class="algo-icon">🔤</div>
+      <div class="algo-title">Metaspace Pre-tokeniser</div>
+      <div class="algo-desc">Words are marked with ▁ instead of splitting on punctuation. "India's" stays as one unit, allowing BPE to learn <em>India's</em> as a single token — reducing fertility below what whitespace splitting could achieve.</div>
+    </div>
+    <div class="algo-card">
+      <div class="algo-icon">🧹</div>
+      <div class="algo-title">NFKC Normalisation</div>
+      <div class="algo-desc">Unicode compatibility decomposition followed by canonical composition. Essential for Indic scripts where multiple code-point sequences can represent the same glyph. Ensures consistent character coverage across languages.</div>
+    </div>
+    <div class="algo-card">
+      <div class="algo-icon">⚖️</div>
+      <div class="algo-title">Corpus Balancing</div>
+      <div class="algo-desc">Each language's corpus is replicated by a tuned weight (en×3, hi×5, te×8, bn×8) so that every language receives proportional BPE merge capacity despite their different article lengths (43K – 201K chars).</div>
+    </div>
+    <div class="algo-card">
+      <div class="algo-icon">🔗</div>
+      <div class="algo-title">Script Synergy</div>
+      <div class="algo-desc">Bengali and Hindi both use Brahmic-family scripts; Telugu shares many Indic numeral and punctuation patterns. Cross-language merges benefit all four scripts, compressing each more than a monolingual tokenizer could.</div>
+    </div>
+    <div class="algo-card">
+      <div class="algo-icon">🎯</div>
+      <div class="algo-title">min_frequency = 1</div>
+      <div class="algo-desc">Every pair that appears even once is eligible for merging. This is critical for Indic scripts where character combinations are numerous but often infrequent in a single article. No pair is left behind.</div>
+    </div>
+    <div class="algo-card">
+      <div class="algo-icon">🔄</div>
+      <div class="algo-title">Faithful Round-trip</div>
+      <div class="algo-desc">decode(encode(text)) preserves all visible characters. The Metaspace decoder restores word-initial spaces, and NFKC normalisation ensures lossless treatment of apostrophes, numbers, and punctuation.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Download -->
+<section id="download">
+  <p class="section-title">Download Tokenizer</p>
+  <p class="section-sub">All files needed to reproduce the scores.</p>
+  <div class="download-area">
+    <div class="dl-info">
+      <strong>tokenizer.json</strong> — full HuggingFace-compatible BPE model<br>
+      <strong>vocab.json</strong> — sorted token list (<span id="dl-vocab-size">10 000</span> tokens)<br>
+      <strong>merges.json</strong> — BPE merge rules (<span id="dl-merges-size">9 644</span> rules)<br>
+      <span style="font-size:.75rem">Trained on Wikipedia "India" article · English, Hindi, Telugu, Bengali</span>
+    </div>
+    <div class="dl-btns">
+      <button class="dl-btn dl-primary" onclick="downloadFile('tokenizer.json','tokenizer.json')">Download tokenizer.json</button>
+      <button class="dl-btn dl-secondary" onclick="downloadFile('vocab.json','vocab.json')">vocab.json</button>
+      <button class="dl-btn dl-secondary" onclick="downloadFile('merges.json','merges.json')">merges.json</button>
+    </div>
+  </div>
+</section>
+
+<footer>ERA v5 · Session 2 · Multilingual BPE Tokenizer · harshvardhan.rajug@gmail.com</footer>
+
+<script>
+// ── Colour palette ──────────────────────────────────────────────────────────
+const LANG_COLORS = {
+  English: '#8b5cf6', Hindi: '#06b6d4', Telugu: '#10b981', Bengali: '#f59e0b'
+};
+const SCRIPTS = {
+  English: 'Latin', Hindi: 'Devanagari', Telugu: 'Telugu', Bengali: 'Bengali'
+};
+const LANG_CODES = { English:'en', Hindi:'hi', Telugu:'te', Bengali:'bn' };
+const SAMPLES = {
+  en: "India is the seventh-largest country by area, the most populous country, and the most populous democracy in the world.",
+  hi: "भारत दक्षिण एशिया में स्थित एक देश है। भारत क्षेत्रफल के आधार पर विश्व का सातवाँ सबसे बड़ा देश है।",
+  te: "భారతదేశం దక్షిణాసియాలో ఒక దేశం. ఇది జనాభా పరంగా ప్రపంచంలో అత్యధిక జనాభా కలిగిన దేశం.",
+  bn: "ভারত দক্ষিণ এশিয়ার একটি দেশ। এটি আয়তনের দিক থেকে বিশ্বের সপ্তম বৃহত্তম দেশ।"
+};
+
+// ── Load results ─────────────────────────────────────────────────────────────
+let results = null;
+
+fetch('results.json')
+  .then(r => r.json())
+  .then(data => {
+    results = data;
+    renderResults(data);
+  })
+  .catch(e => console.error('Failed to load results.json', e));
+
+function renderResults(d) {
+  const stats  = d.stats;
+  const langs  = Object.keys(stats);
+  const sorted = d.fertilies_sorted;          // [[lang, fert], ...]
+  const fMin   = d.f_min, fMax = d.f_max;
+  const spread = d.spread;
+  const raw    = d.score;
+  const adj    = d.adj_score;
+  const penalty = d.hindi_penalty;
+
+  // Hero cards
+  const fc = { English: 'en', Hindi: 'hi', Telugu: 'te', Bengali: 'bn' };
+  for (const [lang, f] of sorted) {
+    const el = document.getElementById('hc-' + fc[lang] + '-f');
+    if (el) el.textContent = f.toFixed(4);
+  }
+  document.getElementById('hero-spread').textContent = spread.toFixed(4);
+
+  // Score banner
+  document.getElementById('score-val').textContent = adj.toLocaleString('en', {maximumFractionDigits:0});
+  const penTxt = penalty > 1.0001
+    ? ` (raw ${raw.toLocaleString('en',{maximumFractionDigits:0})} ÷ Hindi penalty ${penalty.toFixed(4)})`
+    : '';
+  document.getElementById('score-label').textContent = 'Hindi-adjusted score' + penTxt;
+  document.getElementById('score-formula').textContent =
+    `1000 / (${fMax.toFixed(6)} − ${fMin.toFixed(6)}) = ${raw.toFixed(2)}`;
+
+  // Spread box
+  const [minLang, minFert] = sorted[0];
+  const [maxLang, maxFert] = sorted[sorted.length-1];
+  document.getElementById('spread-box').innerHTML = `
+    <div class="spread-lang">
+      <span class="spread-lang-name">MIN · ${minLang}</span>
+      <span class="spread-lang-val" style="color:${LANG_COLORS[minLang]}">${minFert.toFixed(6)}</span>
+    </div>
+    <span class="spread-arrow">→ spread →</span>
+    <div class="spread-lang">
+      <span class="spread-lang-name">MAX · ${maxLang}</span>
+      <span class="spread-lang-val" style="color:${LANG_COLORS[maxLang]}">${maxFert.toFixed(6)}</span>
+    </div>
+    <span class="spread-result">Δ = ${spread.toFixed(6)}</span>
+  `;
+
+  // Ratio cards
+  const grid = document.getElementById('ratio-grid');
+  for (const [lang, fert] of sorted) {
+    const s = stats[lang];
+    const pct = Math.min(100, fert * 60); // visual bar (1.0 = 60%)
+    grid.innerHTML += `
+      <div class="ratio-card" style="border-color:${LANG_COLORS[lang]}33">
+        <div class="rc-lang" style="color:${LANG_COLORS[lang]}">${lang.toUpperCase()} · ${SCRIPTS[lang]}</div>
+        <div class="rc-fertility" style="color:${LANG_COLORS[lang]}">${fert.toFixed(4)}</div>
+        <div class="rc-bar-wrap"><div class="rc-bar" style="width:${pct}%;background:${LANG_COLORS[lang]}"></div></div>
+        <div class="rc-details">${s.token_count.toLocaleString()} tokens / ${s.faithful_units.toLocaleString()} FU</div>
+        <div class="rc-details">${s.char_count.toLocaleString()} chars · ${s.char_count > 0 ? (s.char_count/1024).toFixed(0) : '—'} KB</div>
+        ${lang === minLang ? '<div class="rc-rank" style="color:'+LANG_COLORS[lang]+'">▼ BEST (min)</div>'
+          : lang === maxLang ? '<div class="rc-rank" style="color:var(--red)">▲ WORST (max)</div>' : ''}
+      </div>`;
+  }
+
+  // Stats table
+  const tbody = document.getElementById('stats-tbody');
+  for (const [lang, fert] of sorted) {
+    const s = stats[lang];
+    const isMin = lang === minLang, isMax = lang === maxLang;
+    tbody.innerHTML += `<tr>
+      <td style="color:${LANG_COLORS[lang]};font-weight:600">${lang}</td>
+      <td>${SCRIPTS[lang]}</td>
+      <td>${s.faithful_units.toLocaleString()}</td>
+      <td>${s.token_count.toLocaleString()}</td>
+      <td style="font-family:var(--mono);font-weight:600">${fert.toFixed(6)}</td>
+      <td>${isMin ? '<span class="tag tag-min">MIN</span>' : isMax ? '<span class="tag tag-max">MAX</span>' : '—'}</td>
+    </tr>`;
+  }
+
+  // Download info
+  if (d.vocab_size) document.getElementById('dl-vocab-size').textContent = d.vocab_size.toLocaleString();
+  if (d.num_merges) document.getElementById('dl-merges-size').textContent = d.num_merges.toLocaleString();
+}
+
+// ── BPE Tokenizer (JS re-implementation) ─────────────────────────────────────
+let tokenizerData = null;
+let mergesIndex   = null;   // Map: "a b" → priority index
+
+fetch('tokenizer.json')
+  .then(r => r.json())
+  .then(data => {
+    tokenizerData = data;
+    const merges = data.model?.merges || [];
+    mergesIndex = new Map(merges.map((m, i) => [Array.isArray(m) ? m.join(' ') : m, i]));
+    document.getElementById('tok-loading').style.display = 'none';
+    document.getElementById('tok-btn').disabled = false;
+    document.getElementById('tok-btn').textContent = 'Tokenize';
+  })
+  .catch(e => {
+    document.getElementById('tok-loading').textContent = 'Tokenizer unavailable offline.';
+  });
+
+function nfkc(text) {
+  // Browser NFKC normalisation
+  return text.normalize('NFKC');
+}
+
+function encodeWord(word) {
+  // Metaspace: prepend ▁ to each "word" (pre-token)
+  const chars = ['▁' + word[0], ...word.slice(1)];
+  let seq = chars;
+
+  while (true) {
+    let bestIdx = Infinity, bestPos = -1;
+    for (let i = 0; i < seq.length - 1; i++) {
+      const key = seq[i] + ' ' + seq[i+1];
+      const idx = mergesIndex.get(key);
+      if (idx !== undefined && idx < bestIdx) {
+        bestIdx = idx; bestPos = i;
+      }
+    }
+    if (bestPos === -1) break;
+    const merged = seq[bestPos] + seq[bestPos + 1];
+    seq = [...seq.slice(0, bestPos), merged, ...seq.slice(bestPos + 2)];
+  }
+  return seq;
+}
+
+function tokenize(text) {
+  if (!mergesIndex) return null;
+  text = nfkc(text);
+  const words = text.split(/\s+/).filter(Boolean);
+  const allTokens = [];
+  for (const word of words) {
+    if (word.length === 0) continue;
+    const toks = encodeWord(Array.from(word));
+    allTokens.push(...toks);
+  }
+  return allTokens;
+}
+
+// Token colours cycling through a palette
+const TOKEN_PALETTE = [
+  '#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444',
+  '#ec4899','#3b82f6','#f97316','#84cc16','#14b8a6'
+];
+function tokenColor(i) { return TOKEN_PALETTE[i % TOKEN_PALETTE.length]; }
+
+function doTokenize() {
+  const input = document.getElementById('tok-input').value.trim();
+  if (!input) return;
+  const tokens = tokenize(input);
+  if (!tokens) {
+    document.getElementById('tok-output').innerHTML = '<span class="loading-msg">Tokenizer not loaded yet.</span>';
+    return;
+  }
+
+  const out = document.getElementById('tok-output');
+  out.innerHTML = tokens.map((tok, i) => {
+    const color = tokenColor(Math.floor(i / 3));  // group colours
+    const display = tok.replace('▁', '·');
+    return `<span class="token-chip" style="background:${color}22;border-color:${color}55;color:${color}" title="${tok}">${display}</span>`;
+  }).join('');
+
+  const vocab = tokenizerData?.model?.vocab || {};
+  document.getElementById('tok-stats').innerHTML =
+    `<strong>${tokens.length}</strong> tokens · <strong>${input.length}</strong> chars · ` +
+    `avg <strong>${(tokens.length / input.split(/\s+/).filter(Boolean).length).toFixed(2)}</strong> tokens/word`;
+}
+
+function loadSample(lang) {
+  document.getElementById('tok-input').value = SAMPLES[lang] || '';
+  doTokenize();
+}
+
+// ── Download helper ───────────────────────────────────────────────────────────
+function downloadFile(url, filename) {
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// Enter key in textarea → tokenize
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('tok-input');
+  if (ta) {
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) doTokenize();
+    });
+  }
+});
+</script>
+</body>
+</html>
