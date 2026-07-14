@@ -6,14 +6,16 @@
     "Bengali"
   ],
   "fourth_language": "Bengali",
-  "vocab_size": 10000,
-  "num_merges": 9644,
+  "supplemental": {},
+  "alpha": 0.3,
   "train_weights": {
     "English": 3,
     "Hindi": 5,
     "Telugu": 8,
     "Bengali": 8
   },
+  "vocab_size": 10000,
+  "num_merges": 9644,
   "stats": {
     "English": {
       "char_count": 201565,
