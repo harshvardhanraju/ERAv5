@@ -301,10 +301,28 @@
       <strong>merges.json</strong> — BPE merge rules (<span id="dl-merges-size">9 644</span> rules)<br>
       <span style="font-size:.75rem">Trained on Wikipedia "India" article · English, Hindi, Telugu, Bengali</span>
     </div>
+
+    <!-- Direct URLs — for programmatic loading / graders -->
+    <div style="margin:.9rem 0;background:#0a0a12;border:1px solid #252540;border-radius:10px;padding:1rem 1.2rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:2;">
+      <div style="color:#7070a0;margin-bottom:.3rem;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;">Direct download URLs (no JS required)</div>
+      <div><span style="color:#7c3aed;">tokenizer.json</span> →
+        <a href="https://harsha-erav5-s2.netlify.app/tokenizer.json" style="color:#06b6d4;text-decoration:none;" target="_blank">https://harsha-erav5-s2.netlify.app/tokenizer.json</a>
+      </div>
+      <div><span style="color:#7c3aed;">vocab.json</span> &nbsp;&nbsp;&nbsp;&nbsp;→
+        <a href="https://harsha-erav5-s2.netlify.app/vocab.json" style="color:#06b6d4;text-decoration:none;" target="_blank">https://harsha-erav5-s2.netlify.app/vocab.json</a>
+      </div>
+      <div><span style="color:#7c3aed;">merges.json</span> &nbsp;→
+        <a href="https://harsha-erav5-s2.netlify.app/merges.json" style="color:#06b6d4;text-decoration:none;" target="_blank">https://harsha-erav5-s2.netlify.app/merges.json</a>
+      </div>
+      <div style="margin-top:.6rem;color:#7070a0;font-size:.72rem;">
+        Load in Python: <span style="color:#10b981;">from tokenizers import Tokenizer; tok = Tokenizer.from_file(downloaded_path)</span>
+      </div>
+    </div>
+
     <div class="dl-btns">
-      <button class="dl-btn dl-primary" onclick="downloadFile('tokenizer.json','tokenizer.json')">Download tokenizer.json</button>
-      <button class="dl-btn dl-secondary" onclick="downloadFile('vocab.json','vocab.json')">vocab.json</button>
-      <button class="dl-btn dl-secondary" onclick="downloadFile('merges.json','merges.json')">merges.json</button>
+      <a class="dl-btn dl-primary" href="tokenizer.json" download="tokenizer.json">⬇ tokenizer.json</a>
+      <a class="dl-btn dl-secondary" href="vocab.json" download="vocab.json">vocab.json</a>
+      <a class="dl-btn dl-secondary" href="merges.json" download="merges.json">merges.json</a>
     </div>
   </div>
 </section>
