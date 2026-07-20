@@ -157,10 +157,14 @@ def train_tokenizer(corpus: list[str]) -> Tokenizer:
     tok.pre_tokenizer = Metaspace(replacement="▁", prepend_scheme="always")
     tok.decoder       = MetaspaceDecoder(replacement="▁", prepend_scheme="always")
 
+    # initial_alphabet guarantees every printable ASCII char gets its own token,
+    # so nothing routes to [UNK] and roundtrip fidelity is preserved.
+    import string
     trainer = BpeTrainer(
         vocab_size=VOCAB_SIZE,
         special_tokens=["[UNK]"],
         min_frequency=1,
+        initial_alphabet=list(string.printable.replace('\t\n\r\x0b\x0c', '')),
         show_progress=True,
     )
     tok.train_from_iterator(corpus, trainer=trainer)
